@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSM I Master Study Portal - Scrum Guide 2020</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        scrum: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- QRCode.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(2, 132, 199, 0.8); }
+
+        .grid-cell-selected { background-color: #0284c7 !important; color: #ffffff !important; }
+        .grid-cell-found { background-color: #10b981 !important; color: #ffffff !important; font-weight: bold; }
+        
+        .cw-input {
+            width: 100%; height: 100%; text-align: center; text-transform: uppercase;
+            font-weight: 800; background: transparent; color: #f8fafc; outline: none;
+        }
+        .cw-input:focus { background-color: rgba(2, 132, 199, 0.35); }
+        .cw-correct { background-color: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; color: #6ee7b7 !important; }
+        .cw-wrong { background-color: rgba(244, 63, 94, 0.25) !important; border-color: #f43f5e !important; }
+        
+        .podium-1 { height: 180px; background: linear-gradient(180deg, #f59e0b 0%, #78350f 100%); }
+        .podium-2 { height: 140px; background: linear-gradient(180deg, #94a3b8 0%, #334155 100%); }
+        .podium-3 { height: 110px; background: linear-gradient(180deg, #d97706 0%, #451a03 100%); }
+        .podium-4 { height: 85px;  background: linear-gradient(180deg, #3b82f6 0%, #1e3a8a 100%); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-2">
+                <!-- Brand / Logo -->
+                <div class="flex items-center space-x-3 shrink-0">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                        <i class="fa-solid fa-bolt text-xl"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <h1 class="text-lg font-bold text-white tracking-wide leading-none">PSM I Master Portal</h1>
+                        <span class="text-xs text-sky-400 font-medium">Scrum Guide 2020 Compliant</span>
+                    </div>
+                </div>
+
+                <!-- Active Student Pill & QR Access -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="openRegistrationModal()" class="flex items-center space-x-2 bg-slate-900 border border-slate-700 hover:border-sky-500 px-3 py-1.5 rounded-xl transition">
+                        <span id="active-student-avatar" class="text-lg">🎓</span>
+                        <div class="text-left">
+                            <span class="block text-[10px] text-slate-400 font-bold uppercase leading-none">Estudiante Activo</span>
+                            <span id="active-student-name" class="text-xs font-bold text-sky-300 leading-tight">Sin Registrar</span>
+                        </div>
+                    </button>
+
+                    <button onclick="openLeaderboardModal()" class="p-2 bg-slate-700 hover:bg-slate-600 text-amber-400 rounded-xl transition relative" title="Ver Podio">
+                        <i class="fa-solid fa-trophy text-lg"></i>
+                        <span id="registered-count-badge" class="absolute -top-1 -right-1 bg-sky-500 text-white text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center">0</span>
+                    </button>
+
+                    <button onclick="openQRModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span class="hidden md:inline">Acceso QR</span>
+                    </button>
+                </div>
+
+                <!-- Desktop Nav Tabs -->
+                <nav class="hidden lg:flex space-x-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700/60">
+                    <button onclick="switchTab('quiz')" id="tab-quiz" class="nav-tab px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 bg-sky-600 text-white shadow">
+                        <i class="fa-solid fa-list-check"></i> <span>Simulador (14)</span>
+                    </button>
+                    <button onclick="switchTab('flashcards')" id="tab-flashcards" class="nav-tab px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-clone"></i> <span>Flashcards (44)</span>
+                    </button>
+                    <button onclick="switchTab('games')" id="tab-games" class="nav-tab px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-gamepad"></i> <span>Juegos</span>
+                    </button>
+                    <button onclick="switchTab('tips')" id="tab-tips" class="nav-tab px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-book-open"></i> <span>Guía & Tips</span>
+                    </button>
+                </nav>
+
+                <!-- Mobile Menu Button -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Nav Bar -->
+        <div id="mobile-menu" class="hidden lg:hidden border-b border-slate-700 bg-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('quiz'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-white bg-sky-600 flex items-center space-x-2">
+                <i class="fa-solid fa-list-check w-5"></i><span>Simulador de Examen (14 P)</span>
+            </button>
+            <button onclick="switchTab('flashcards'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-clone w-5"></i><span>Flashcards (44 Tarjetas)</span>
+            </button>
+            <button onclick="switchTab('games'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-gamepad w-5"></i><span>Juegos Interactivos</span>
+            </button>
+            <button onclick="switchTab('tips'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-700 flex items-center space-x-2">
+                <i class="fa-solid fa-book-open w-5"></i><span>Guía & Tips Completos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Active Roster Banner -->
+    <div class="bg-slate-800/60 border-b border-slate-700/60 py-2 px-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto gap-4 text-xs">
+            <div class="flex items-center space-x-2 shrink-0">
+                <span id="live-sync-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Conectando a Firebase..."></span>
+                <span class="font-bold text-slate-300">Sala en Vivo (<span id="room-code-display" class="text-sky-400"></span>):</span>
+            </div>
+            <div id="students-roster-list" class="flex items-center space-x-2 overflow-x-auto py-1">
+                <span class="text-slate-500 italic">Esperando estudiantes... Escanea el QR o haz clic en "Sin Registrar".</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- ================= TAB 1: SIMULATOR ================= -->
+        <section id="content-quiz" class="tab-content space-y-6">
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <span>Simulador Real PSM I</span>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30">14 Preguntas Oficiales</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Suma puntos directamente al perfil de tu estudiante activo.</p>
+                </div>
+                <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
+                    <div class="text-center">
+                        <span class="block text-xs uppercase text-slate-400 font-semibold tracking-wider">Pregunta</span>
+                        <span id="quiz-progress-text" class="text-lg font-extrabold text-sky-400">1 / 14</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="block text-xs uppercase text-slate-400 font-semibold tracking-wider">Puntos Sesión</span>
+                        <span id="quiz-score-text" class="text-lg font-extrabold text-emerald-400">0 pts</span>
+                    </div>
+                    <button onclick="resetQuiz()" class="px-3 py-2 text-xs font-bold bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition flex items-center gap-1.5 border border-slate-600">
+                        <i class="fa-solid fa-rotate-right"></i> Reiniciar
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 relative overflow-hidden">
+                <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div id="quiz-progress-bar" class="bg-sky-500 h-full transition-all duration-300 rounded-full" style="width: 7%"></div>
+                </div>
+
+                <div>
+                    <span id="question-type-badge" class="inline-block text-xs font-bold px-3 py-1 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2">
+                        Elija la mejor respuesta
+                    </span>
+                    <h3 id="question-text" class="text-lg sm:text-xl font-semibold text-white leading-relaxed">
+                        Cargando pregunta...
+                    </h3>
+                </div>
+
+                <div id="options-container" class="space-y-3"></div>
+                <div id="quiz-feedback" class="hidden p-4 rounded-xl border text-sm font-medium transition-all duration-300"></div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-slate-700/80">
+                    <button id="btn-prev" onclick="navigateQuiz(-1)" class="px-4 py-2 text-sm font-semibold bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl transition disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Anterior
+                    </button>
+                    <button id="btn-submit" onclick="submitAnswer()" class="px-5 py-2.5 text-sm font-bold bg-sky-600 hover:bg-sky-500 text-white rounded-xl shadow-lg shadow-sky-600/30 transition">
+                        Confirmar Respuesta
+                    </button>
+                    <button id="btn-next" onclick="navigateQuiz(1)" class="hidden px-5 py-2.5 text-sm font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/30 transition">
+                        Siguiente <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 2: FLASHCARDS ================= -->
+        <section id="content-flashcards" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-800 p-5 rounded-2xl border border-slate-700">
+                <div>
+                    <h2 class="text-xl font-bold text-white">⚡ Tarjetas de Memoria Giratorias (44 Preguntas Clave)</h2>
+                    <p class="text-xs text-slate-400">Haz clic sobre la tarjeta para girarla y revelar el tip oficial de examen.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="flashcard-counter" class="text-sm font-semibold text-sky-400">1 / 44</span>
+                    <button onclick="prevFlashcard()" class="p-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition" title="Anterior"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button onclick="shuffleFlashcards()" class="p-2.5 bg-slate-700 hover:bg-slate-600 text-amber-400 rounded-xl transition" title="Mezclar tarjetas"><i class="fa-solid fa-shuffle"></i></button>
+                    <button onclick="nextFlashcard()" class="p-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition" title="Siguiente"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="perspective-1000 w-full max-w-2xl mx-auto h-80 cursor-pointer group" onclick="flipFlashcard()">
+                <div id="flashcard-inner" class="relative w-full h-full duration-500 transform-style-3d shadow-2xl rounded-2xl">
+                    <div class="absolute w-full h-full backface-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-2 border-sky-500/40 rounded-2xl p-8 flex flex-col justify-between items-center text-center">
+                        <span class="text-xs uppercase font-extrabold tracking-widest text-sky-400 bg-sky-950/60 px-3 py-1 rounded-full border border-sky-500/30">Pregunta de Examen PSM I</span>
+                        <p id="flashcard-question" class="text-xl font-bold text-slate-100 leading-snug">Cargando...</p>
+                        <span class="text-xs text-slate-400 flex items-center gap-1 animate-pulse"><i class="fa-solid fa-hand-pointer"></i> Haz clic para girar la tarjeta 🔄</span>
+                    </div>
+                    <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-emerald-950/90 to-slate-900 border-2 border-emerald-500/50 rounded-2xl p-8 flex flex-col justify-between items-center text-center overflow-y-auto">
+                        <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">Tip Oficial Scrum 2020</span>
+                        <div id="flashcard-answer" class="text-base sm:text-lg font-medium text-emerald-200 leading-relaxed">Cargando...</div>
+                        <span class="text-xs text-emerald-400/80 flex items-center gap-1"><i class="fa-solid fa-rotate"></i> Volver a ver la pregunta</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 3: GAMES SUITE ================= -->
+        <section id="content-games" class="tab-content hidden space-y-8">
+            <div class="flex flex-wrap gap-2 border-b border-slate-700 pb-3">
+                <button onclick="switchGame('wordsearch')" id="game-btn-wordsearch" class="px-4 py-2 rounded-xl text-sm font-bold bg-sky-600 text-white transition">
+                    <i class="fa-solid fa-table-cells me-1"></i> Sopa de Letras (Pistas)
+                </button>
+                <button onclick="switchGame('crossword')" id="game-btn-crossword" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-border-all me-1"></i> Crucigrama PSM I
+                </button>
+                <button onclick="switchGame('match')" id="game-btn-match" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-diagram-project me-1"></i> Relacionar Conceptos
+                </button>
+                <button onclick="switchGame('tf')" id="game-btn-tf" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-bolt me-1"></i> Mito vs Guía Express
+                </button>
+            </div>
+
+            <!-- GAME 1: SOPA DE LETRAS CON PREGUNTAS -->
+            <div id="game-wordsearch" class="game-view space-y-6">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Sopa de Letras: Pregunta ➔ Respuesta Clave</h3>
+                        <p class="text-xs text-slate-400">Lee la pregunta de examen, deduce la palabra clave y marca la primera y última letra en la cuadrícula (+15 pts c/u).</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span id="ws-found-count" class="text-sm font-bold text-emerald-400 bg-emerald-950 px-3 py-1.5 rounded-lg border border-emerald-800">Resueltas: 0 / 6</span>
+                        <button onclick="initWordSearch()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-rotate-right"></i> Reiniciar</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="lg:col-span-7 bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 flex justify-center overflow-x-auto">
+                        <div id="ws-grid" class="grid grid-cols-12 gap-1 select-none font-mono font-bold text-sm sm:text-base"></div>
+                    </div>
+                    <div class="lg:col-span-5 bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-3">
+                        <h4 class="text-sm font-bold uppercase tracking-wider text-sky-400 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-question"></i> Preguntas de Examen (Encuentra su respuesta)
+                        </h4>
+                        <ul id="ws-words-list" class="space-y-2.5"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME 1B: CRUCIGRAMA PSM I -->
+            <div id="game-crossword" class="game-view hidden space-y-6">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Crucigrama de Examen PSM I</h3>
+                        <p class="text-xs text-slate-400">Escribe las respuestas de las preguntas horizontales y verticales directamente en el tablero (+15 pts por palabra correcta).</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="checkCrossword()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-check-double"></i> Validar Crucigrama
+                        </button>
+                        <button onclick="initCrossword()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-xl transition">
+                            <i class="fa-solid fa-rotate-right"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <div class="lg:col-span-7 bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-700 flex flex-col items-center overflow-x-auto">
+                        <div id="cw-grid" class="grid gap-1 select-none font-mono"></div>
+                        <div id="cw-status" class="mt-4 text-xs font-bold text-slate-400"></div>
+                    </div>
+
+                    <div class="lg:col-span-5 bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-4">
+                        <div>
+                            <h4 class="text-xs font-extrabold uppercase tracking-wider text-sky-400 border-b border-slate-700 pb-2 mb-2">
+                                <i class="fa-solid fa-arrows-left-right me-1"></i> Horizontales
+                            </h4>
+                            <ul id="cw-clues-across" class="space-y-2.5 text-xs text-slate-300"></ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-extrabold uppercase tracking-wider text-amber-400 border-b border-slate-700 pb-2 mb-2">
+                                <i class="fa-solid fa-arrows-up-down me-1"></i> Verticales
+                            </h4>
+                            <ul id="cw-clues-down" class="space-y-2.5 text-xs text-slate-300"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME 2: RELACIONAR CONCEPTOS -->
+            <div id="game-match" class="game-view hidden space-y-6">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Relación de Roles y Responsabilidades</h3>
+                        <p class="text-xs text-slate-400">Empareja el concepto de la izquierda con su descripción a la derecha (+10 pts por pareja).</p>
+                    </div>
+                    <button onclick="initMatchGame()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold rounded-lg transition"><i class="fa-solid fa-rotate-right"></i> Reiniciar</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div id="match-left" class="space-y-3"></div>
+                    <div id="match-right" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- GAME 3: MITO VS GUIA -->
+            <div id="game-tf" class="game-view hidden space-y-6">
+                <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Mito vs Guía Express (15 Preguntas • 15s)</h3>
+                        <p class="text-xs text-slate-400">Responde rápido antes de que el reloj llegue a cero (+10 pts por respuesta correcta).</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span id="tf-progress-badge" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300">1 / 15</span>
+                        <span id="tf-timer-badge" class="text-sm font-black px-3 py-1.5 rounded-lg bg-amber-950/80 border border-amber-500/50 text-amber-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-stopwatch"></i> <span id="tf-timer-text">15s</span>
+                        </span>
+                        <span id="tf-game-points" class="text-sm font-extrabold text-sky-400">Puntos: 0</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto space-y-6 text-center relative overflow-hidden">
+                    <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+                        <div id="tf-timer-bar" class="bg-amber-400 h-full transition-all duration-1000 ease-linear" style="width: 100%"></div>
+                    </div>
+
+                    <span id="tf-badge" class="inline-block text-xs font-bold px-3 py-1 rounded-full bg-slate-700 text-slate-300">Afirmación de Examen #1</span>
+                    <h3 id="tf-statement" class="text-lg sm:text-xl font-bold text-white leading-relaxed">Cargando...</h3>
+
+                    <div id="tf-buttons" class="flex flex-col sm:flex-row justify-center gap-4 pt-2">
+                        <button onclick="answerTF(true)" class="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-check"></i> VERDADERO
+                        </button>
+                        <button onclick="answerTF(false)" class="px-8 py-3 bg-rose-600 hover:bg-rose-500 text-white font-extrabold rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-xmark"></i> FALSO (MITO)
+                        </button>
+                    </div>
+
+                    <div id="tf-feedback" class="hidden p-4 rounded-xl text-sm font-medium border text-left"></div>
+
+                    <button id="tf-next-btn" onclick="nextTF()" class="hidden px-6 py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl transition mx-auto">
+                        Siguiente Afirmación <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TAB 4: TIPS & STUDY MATERIAL ================= -->
+        <section id="content-tips" class="tab-content hidden space-y-8">
+            <div class="bg-slate-800/90 p-6 rounded-2xl border border-slate-700 space-y-5">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-amber-500/20 text-amber-400 rounded-xl">
+                        <i class="fa-solid fa-star text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-bold text-white">Las 12 Reglas de Oro Más Rentables para Memorizar</h2>
+                        <p class="text-xs text-slate-400">Dominar estas reglas descarta de inmediato el 80% de distractores en el examen real.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">1. Product Owner</span>Dueño único y absoluto del Product Backlog.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">2. Developers</span>Gestionan por completo el Sprint y su progreso.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">3. Scrum Master</span>Enseña y remueve impedimentos; NO lidera autocráticamente.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">4. 1 Producto = 1 Backlog</span>Un único Product Backlog sin importar cuántos equipos haya.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">5. Sprint Goal Estable</span>Un único objetivo por Sprint. Nunca cambia durante el Sprint.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">6. Sprint Backlog Flexible</span>Los Developers lo adaptan conforme aprenden cosas nuevas.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">7. Scrum es un Framework</span>Nunca una metodología o proceso rígido.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">8. Done ≠ Released</span>Listo para liberarse; la decisión de lanzar es del PO.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">9. DoD Común</span>Varios equipos en un mismo producto comparten una única DoD.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">10. Rol de Dirección</span>Externo a Scrum. Apoya al SM y PO; no supervisa el Sprint.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">11. Sin Propiedad Individual</span>Nadie es dueño exclusivo de un ítem del Backlog.</div>
+                    <div class="bg-slate-900/70 p-3.5 rounded-xl border border-slate-700"><span class="font-bold text-sky-400 block mb-1">12. Timebox Inviolable</span>Un Sprint nunca se extiende bajo ninguna circunstancia.</div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 space-y-4">
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Explorador Completo de 44 Tips & Preguntas Resueltas</h2>
+                        <p class="text-xs text-slate-400">Filtra por categoría o busca palabras clave como "CEO", "DoD", "Daily", "Timebox".</p>
+                    </div>
+                    <div class="relative w-full md:w-72">
+                        <input type="text" id="tip-search-input" oninput="renderTipsGrid()" placeholder="Buscar tip o pregunta..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+                        <i class="fa-solid fa-magnifying-glass absolute right-3 top-2.5 text-slate-500 text-xs"></i>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterTips('all', this)" class="tip-filter-btn active px-3 py-1.5 text-xs font-bold rounded-lg bg-sky-600 text-white">Todos (44)</button>
+                    <button onclick="filterTips('roles', this)" class="tip-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600">Roles</button>
+                    <button onclick="filterTips('eventos', this)" class="tip-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600">Eventos y Tiempos</button>
+                    <button onclick="filterTips('artefactos', this)" class="tip-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600">Artefactos y DoD</button>
+                    <button onclick="filterTips('reglas', this)" class="tip-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600">Reglas y Casos</button>
+                </div>
+            </div>
+
+            <div id="tips-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        PSM I Master Study Portal • Guía de Scrum 2020
+    </footer>
+
+    <!-- ================= MODALS ================= -->
+    <!-- Modal: Registro de Estudiante -->
+    <div id="modal-registration" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="text-lg font-bold text-white">🎓 Registro de Estudiante</h3>
+                <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="registerStudent(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre o Apodo</label>
+                    <input type="text" id="input-student-name" required placeholder="Ej. Laura Gómez" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-sky-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Elige tu Avatar</label>
+                    <div class="flex justify-between gap-2">
+                        <button type="button" onclick="selectAvatar('🎓')" class="avatar-btn active p-2.5 rounded-xl bg-slate-700 border-2 border-sky-500 text-xl">🎓</button>
+                        <button type="button" onclick="selectAvatar('🚀')" class="avatar-btn p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xl">🚀</button>
+                        <button type="button" onclick="selectAvatar('🦊')" class="avatar-btn p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xl">🦊</button>
+                        <button type="button" onclick="selectAvatar('⚡')" class="avatar-btn p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xl">⚡</button>
+                        <button type="button" onclick="selectAvatar('🦉')" class="avatar-btn p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xl">🦉</button>
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow-lg transition">Comenzar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Podio y Tabla de Posiciones -->
+    <div id="modal-leaderboard" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2"><i class="fa-solid fa-trophy"></i> Podio Top 4 en Vivo</h3>
+                    <p class="text-[11px] text-slate-400">Desempate automático: Mayor puntaje + Quién lo logró primero</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetLiveRoom()" class="px-2.5 py-1 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-700/60 rounded-lg text-[11px] font-bold transition" title="Reiniciar sala para nueva ronda">
+                        <i class="fa-solid fa-trash-can me-1"></i> Nueva Ronda
+                    </button>
+                    <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div id="visual-podium" class="flex items-end justify-center gap-2 pt-6 pb-2 border-b border-slate-700/80 min-h-[220px]"></div>
+            <div id="leaderboard-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Acceso QR -->
+    <div id="modal-qr" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                <h3 class="text-base font-bold text-white">📱 Únete a la Sala en Vivo</h3>
+                <button onclick="closeQRModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-300">Pide a tus estudiantes que escaneen este QR desde su celular para competir todos al mismo tiempo:</p>
+            <div class="bg-white p-4 rounded-xl inline-block mx-auto shadow-inner">
+                <div id="qrcode-container"></div>
+            </div>
+            <div class="text-left space-y-1">
+                <label class="text-[11px] font-bold text-slate-400 uppercase">Enlace directo de la sala:</label>
+                <div class="flex gap-2">
+                    <input type="text" id="qr-url-input" oninput="updateQRCode()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
+                    <button onclick="copyRoomLink()" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold rounded-lg shrink-0" title="Copiar enlace">
+                        <i class="fa-solid fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box (Replaces alert) -->
+    <div id="toast-message" class="hidden fixed bottom-5 right-5 z-50 bg-amber-600 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-center gap-2">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="toast-text">Mensaje</span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuración de tu proyecto Firebase (psm1-352eb)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzf3DS_vmdtMp85n7zaMYvNCmwvqVJFOs",
+            authDomain: "psm1-352eb.firebaseapp.com",
+            projectId: "psm1-352eb",
+            storageBucket: "psm1-352eb.firebasestorage.app",
+            messagingSenderId: "758527478584",
+            appId: "1:758527478584:web:1139a2e0169ada7e604fcd",
+            measurementId: "G-MHWWSLH18H"
+        };
+
+        // Gestión del código de sala en la URL (?room=PSM-XXXX)
+        const urlParams = new URLSearchParams(window.location.search);
+        let roomCode = urlParams.get('room');
+        if (!roomCode) {
+            roomCode = 'PSM-' + Math.floor(1000 + Math.random() * 9000);
+            try {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('room', roomCode);
+                window.history.replaceState({}, '', newUrl.toString());
+            } catch (e) {}
+        }
+        window.currentRoomCode = roomCode;
+        const roomDisplayEl = document.getElementById('room-code-display');
+        if (roomDisplayEl) roomDisplayEl.innerText = roomCode;
+
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+
+        async function initCloudSync() {
+            const syncDot = document.getElementById('live-sync-dot');
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                await signInAnonymously(auth);
+                currentUser = auth.currentUser;
+                if (!currentUser) return;
+
+                if (syncDot) {
+                    syncDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                    syncDot.title = "Conectado en vivo a Firebase Firestore";
+                }
+
+                const playersCol = collection(db, 'rooms', roomCode, 'players');
+                onSnapshot(playersCol, (snapshot) => {
+                    const livePlayers = [];
+                    snapshot.forEach((docSnap) => {
+                        livePlayers.push(docSnap.data());
+                    });
+                    window.syncStudentsFromCloud(livePlayers);
+                }, (err) => {
+                    console.error("Error de sincronización Firestore:", err);
+                    if (syncDot) {
+                        syncDot.className = "w-2 h-2 rounded-full bg-rose-500";
+                        syncDot.title = "Error de permisos en Firestore";
+                    }
+                });
+            } catch (err) {
+                console.warn("Modo local activo (sin conexión a Firebase):", err);
+                if (syncDot) {
+                    syncDot.className = "w-2 h-2 rounded-full bg-rose-500";
+                    syncDot.title = "Sin conexión a la nube";
+                }
+            }
+        }
+
+        window.pushStudentToCloud = async function(studentObj) {
+            if (!db || !currentUser) return;
+            try {
+                const playerRef = doc(db, 'rooms', roomCode, 'players', String(studentObj.id));
+                await setDoc(playerRef, studentObj);
+            } catch (e) {
+                console.error("Error guardando puntaje:", e);
+            }
+        };
+
+        window.clearRoomInCloud = async function(studentIds) {
+            if (!db || !currentUser) return;
+            try {
+                for (const id of studentIds) {
+                    const playerRef = doc(db, 'rooms', roomCode, 'players', String(id));
+                    await deleteDoc(playerRef);
+                }
+            } catch (e) {
+                console.error("Error limpiando sala:", e);
+            }
+        };
+
+        initCloudSync();
+    </script>
+
+    <script>
+        /* ================= 1. STUDENT STATE & REAL-TIME RANKING ================= */
+        let students = [];
+        let myStudentId = null;
+        let activeStudent = null;
+        let selectedAvatar = '🎓';
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-message');
+            document.getElementById('toast-text').innerText = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function sortCompetitors(list) {
+            return [...list].sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return (a.lastUpdated || a.joinedAt || 0) - (b.lastUpdated || b.joinedAt || 0);
+            });
+        }
+
+        window.syncStudentsFromCloud = function(cloudList) {
+            students = cloudList;
+            if (myStudentId) {
+                const updatedMe = students.find(s => String(s.id) === String(myStudentId));
+                if (updatedMe) activeStudent = updatedMe;
+            }
+            updateRosterUI();
+            if (!document.getElementById('modal-leaderboard').classList.contains('hidden')) {
+                renderPodium();
+            }
+        };
+
+        function updateRosterUI() {
+            const rosterEl = document.getElementById('students-roster-list');
+            const badgeEl = document.getElementById('registered-count-badge');
+            const nameEl = document.getElementById('active-student-name');
+            const avatarEl = document.getElementById('active-student-avatar');
+
+            badgeEl.innerText = students.length;
+
+            if (activeStudent) {
+                nameEl.innerText = `${activeStudent.name} (${activeStudent.score} pts)`;
+                avatarEl.innerText = activeStudent.avatar;
+            } else {
+                nameEl.innerText = 'Sin Registrar';
+                avatarEl.innerText = '🎓';
+            }
+
+            if (students.length === 0) {
+                rosterEl.innerHTML = `<span class="text-slate-500 italic">Esperando estudiantes... Escanea el QR o haz clic en "Sin Registrar".</span>`;
+                return;
+            }
+
+            const sorted = sortCompetitors(students);
+            rosterEl.innerHTML = '';
+            sorted.forEach((s, idx) => {
+                const isCurrent = activeStudent && String(activeStudent.id) === String(s.id);
+                const medal = idx === 0 && s.score > 0 ? '🥇' : idx === 1 && s.score > 0 ? '🥈' : idx === 2 && s.score > 0 ? '🥉' : s.avatar;
+                const pill = document.createElement('button');
+                pill.onclick = () => selectActiveStudent(s.id);
+                pill.className = `px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1.5 shrink-0 transition ${
+                    isCurrent ? 'bg-sky-600/30 border-sky-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-300 hover:border-slate-500'
+                }`;
+                pill.innerHTML = `<span>${medal}</span><span>${s.name}</span><span class="text-emerald-400 font-bold">${s.score}p</span>`;
+                rosterEl.appendChild(pill);
+            });
+        }
+
+        /* ================= 3. FULL STUDY TIPS & FLASHCARDS DATA (44 ITEMS) ================= */
+        const fullStudyTips = [
+            { id: 1, cat: "roles", q: "¿Quién gestiona el progreso del trabajo durante un Sprint?", a: "Los <strong>Developers</strong> gestionan su propio trabajo y monitorean el progreso hacia el Sprint Goal. ❌ No el Scrum Master ni el Product Owner." },
+            { id: 2, cat: "eventos", q: "¿Debe estar presente el Scrum Master en el Daily Scrum?", a: "El Daily Scrum es de los Developers para los Developers. ✅ El Scrum Master puede asistir, pero no es obligatorio." },
+            { id: 3, cat: "reglas", q: "Propósito de un Sprint", a: "Cada Sprint debe producir un Incremento <strong>Valioso y Utilizable</strong>. No se trata simplemente de completar tareas." },
+            { id: 4, cat: "roles", q: "Tamaño del Scrum Team", a: "<strong>10 personas o menos</strong>, incluyendo Product Owner, Scrum Master y Developers." },
+            { id: 5, cat: "artefactos", q: "¿Debe liberarse a producción cada Sprint?", a: "<strong>'Done' no significa 'Released'</strong>. Debe estar listo para liberarse, pero no es obligatorio liberarlo en cada Sprint." },
+            { id: 6, cat: "reglas", q: "¿Scrum elimina la complejidad?", a: "❌ Falso. Scrum únicamente <strong>hace visible la complejidad</strong>." },
+            { id: 7, cat: "reglas", q: "¿Cuándo puede cancelarse un Sprint?", a: "<strong>Solo el Product Owner</strong> puede cancelar un Sprint, y únicamente cuando el Sprint Goal se vuelve obsoleto." },
+            { id: 8, cat: "roles", q: "Múltiples equipos Scrum para un solo producto", a: "<strong>Un Producto = Un Product Owner = Un Product Backlog</strong>." },
+            { id: 9, cat: "reglas", q: "Cambiar la terminología de Scrum", a: "Puede ocultar el cambio real, reducir los beneficios y generar confusión en la organización." },
+            { id: 10, cat: "roles", q: "Reemplazo de un Developer en el equipo", a: "Es posible, pero <strong>reduce la productividad de forma temporal</strong> mientras el equipo se estabiliza." },
+            { id: 11, cat: "roles", q: "¿Quién tiene la última palabra sobre el Product Backlog?", a: "El <strong>Product Owner</strong> es una sola persona y tiene la autoridad final sobre su contenido y orden." },
+            { id: 12, cat: "eventos", q: "Mejora de procesos después de la Retrospective", a: "En la Guía 2020 <strong>no es obligatorio</strong> meter al menos una mejora en el siguiente Sprint Backlog." },
+            { id: 13, cat: "eventos", q: "Daily Scrum y rol del Scrum Master", a: "Puede facilitar y ayudar a mantener el timebox, pero <strong>no dirige la reunión</strong> ni exige las 3 preguntas clásicas." },
+            { id: 14, cat: "eventos", q: "Sprint Planning: Duración", a: "Máximo <strong>8 horas</strong> para un Sprint de 1 mes (proporcionalmente menor para Sprints más cortos)." },
+            { id: 15, cat: "reglas", q: "Ajustar trabajo durante el Sprint", a: "PO y Developers renegocian el alcance si surge nueva información, pero <strong>el Sprint Goal se mantiene estable</strong>." },
+            { id: 16, cat: "reglas", q: "¿Qué describe mejor a Scrum?", a: "Es un <strong>Framework (Marco de trabajo)</strong> ligero, nunca una metodología o proceso rígido." },
+            { id: 17, cat: "eventos", q: "¿Qué significa el concepto Timebox?", a: "Significa estrictamente una <strong>Duración MÁXIMA</strong> permitida para un evento." },
+            { id: 18, cat: "roles", q: "Preguntas sobre Valor, Negocio y Lanzamientos", a: "Casi siempre se asocian directamente a la responsabilidad del <strong>Product Owner</strong>." },
+            { id: 19, cat: "eventos", q: "Duración del Daily Scrum", a: "Dura <strong>siempre 15 minutos</strong>, sin importar la duración total del Sprint." },
+            { id: 20, cat: "roles", q: "Habilidades necesarias de los Developers", a: "Deben ser <strong>Cross-functional (multifuncionales)</strong> con todas las habilidades para crear un Incremento." },
+            { id: 21, cat: "eventos", q: "Sprint Review: Duración", a: "Timebox máximo de <strong>4 horas</strong> para un Sprint de 1 mes." },
+            { id: 22, cat: "artefactos", q: "¿El Sprint Backlog puede cambiar?", a: "<strong>Sprint Goal = Estable. Sprint Backlog = Flexible</strong> (se adapta conforme aprenden los Developers)." },
+            { id: 23, cat: "roles", q: "Concepto de Scrum Team Autogestionado", a: "Sin silos ni sub-equipos de analistas/testers; el equipo decide quién hace qué, cuándo y cómo." },
+            { id: 24, cat: "roles", q: "¿Existe el rol de Project Manager en Scrum?", a: "<strong>No existe.</strong> Los únicos roles son Product Owner, Scrum Master y Developers." },
+            { id: 25, cat: "roles", q: "¿Qué pasa si un CEO pide un trabajo urgente directamente?", a: "No puede ordenar a los Developers; debe canalizarlo a través del <strong>Product Owner</strong>." },
+            { id: 26, cat: "artefactos", q: "Propiedad de los elementos del Sprint Backlog", a: "<strong>No existe propiedad individual.</strong> Pertenecen colectivamente a todos los Developers." },
+            { id: 27, cat: "reglas", q: "¿Qué debe hacerse durante el Primer Sprint?", a: "Crear un <strong>Incremento valioso y utilizable</strong> (no un 'Sprint 0' de solo arquitectura)." },
+            { id: 28, cat: "roles", q: "Señales de un Equipo Scrum que funciona MAL", a: "Stakeholders controlando en el Daily Scrum, silos funcionales o externos dictando cómo trabajar." },
+            { id: 29, cat: "roles", q: "¿Cuál es el rol de la Gerencia/Dirección en Scrum?", a: "Brindar soporte externo al PO con perspectivas comerciales y apoyar al SM en empirismo y autogestión." },
+            { id: 30, cat: "artefactos", q: "Definición de Hecho (DoD) con Múltiples Equipos", a: "Deben definir y compartir conjuntamente <strong>una única DoD común</strong>." },
+            { id: 31, cat: "artefactos", q: "¿Cuándo un desarrollador se adueña de un ítem del Backlog?", a: "<strong>¡Nunca!</strong> La responsabilidad es siempre compartida por todos los Developers." },
+            { id: 32, cat: "roles", q: "¿Cuál es la responsabilidad principal del Product Owner?", a: "<strong>Maximizar el valor del producto</strong> resultante del trabajo del Equipo Scrum." },
+            { id: 33, cat: "eventos", q: "¿Cuál es el propósito formal de los Eventos en Scrum?", a: "Ser una oportunidad formal para <strong>inspeccionar y adaptar</strong>." },
+            { id: 34, cat: "artefactos", q: "¿Cuándo se formula de forma completa el Sprint Backlog?", a: "Es un plan dinámico que <strong>se modifica a lo largo del Sprint</strong> conforme se aprende." },
+            { id: 35, cat: "reglas", q: "¿Cómo empezar a usar Scrum en un equipo?", a: "Forma un equipo multifuncional, define necesidades en el Product Backlog y arranca el primer Sprint." },
+            { id: 36, cat: "reglas", q: "¿Qué hacer cuando Scrum no funciona en la organización?", a: "Scrum es un espejo que expone problemas ocultos; analiza disfunciones y apóyate en el empirismo." },
+            { id: 37, cat: "reglas", q: "¿Scrum se utiliza únicamente para desarrollo de software?", a: "<strong>No.</strong> Se usa en cualquier entorno de trabajo complejo (marketing, educación, investigación, etc.)." },
+            { id: 38, cat: "roles", q: "¿Qué hacer si el Product Owner no está disponible?", a: "El PO puede <strong>delegar algunas responsabilidades</strong> manteniendo siempre la rendición de cuentas." },
+            { id: 39, cat: "artefactos", q: "¿Qué sucede si no terminamos todo el trabajo del Sprint?", a: "Los ítems incompletos <strong>vuelven al Product Backlog</strong> para que el PO los reordene." },
+            { id: 40, cat: "eventos", q: "¿Podemos extender el Sprint para terminar el trabajo?", a: "<strong>Nunca.</strong> El Timebox del Sprint es inviolable y nunca se extiende." },
+            { id: 41, cat: "reglas", q: "¿Necesitamos herramientas especiales para implementar Scrum?", a: "<strong>No.</strong> Individuos e interacciones por encima de procesos y herramientas." },
+            { id: 42, cat: "reglas", q: "¿Qué hacemos si terminamos todo antes del fin del Sprint?", a: "Refactorizar, refinar el Product Backlog o tomar más trabajo en colaboración con el Product Owner." },
+            { id: 43, cat: "artefactos", q: "¿Se pueden añadir tareas al Sprint Backlog a mitad del Sprint?", a: "<strong>Sí.</strong> Los Developers lo adaptan continuamente conforme descubren qué se necesita." },
+            { id: 44, cat: "reglas", q: "¿Puede haber varios Objetivos de Sprint en un mismo Sprint?", a: "<strong>No.</strong> Debe existir un <strong>único Sprint Goal</strong> por Sprint." }
+        ];
+
+        let flashcardDeck = [...fullStudyTips];
+        let currentFlashcardIdx = 0;
+        let isFlashcardFlipped = false;
+
+        function updateFlashcardUI() {
+            const item = flashcardDeck[currentFlashcardIdx];
+            document.getElementById('flashcard-counter').innerText = `${currentFlashcardIdx + 1} / ${flashcardDeck.length}`;
+            document.getElementById('flashcard-question').innerText = item.q;
+            document.getElementById('flashcard-answer').innerHTML = item.a;
+            isFlashcardFlipped = false;
+            document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+        }
+
+        function flipFlashcard() {
+            isFlashcardFlipped = !isFlashcardFlipped;
+            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180', isFlashcardFlipped);
+        }
+
+        function nextFlashcard() {
+            currentFlashcardIdx = (currentFlashcardIdx + 1) % flashcardDeck.length;
+            updateFlashcardUI();
+        }
+
+        function prevFlashcard() {
+            currentFlashcardIdx = (currentFlashcardIdx - 1 + flashcardDeck.length) % flashcardDeck.length;
+            updateFlashcardUI();
+        }
+
+        function shuffleFlashcards() {
+            for (let i = flashcardDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardDeck[i], flashcardDeck[j]] = [flashcardDeck[j], flashcardDeck[i]];
+            }
+            currentFlashcardIdx = 0;
+            updateFlashcardUI();
+            showToast("Tarjetas mezcladas aleatoriamente");
+        }
+
+        let currentTipFilter = 'all';
+
+        function renderTipsGrid() {
+            const grid = document.getElementById('tips-cards-grid');
+            const query = (document.getElementById('tip-search-input')?.value || '').toLowerCase();
+            if (!grid) return;
+
+            const filtered = fullStudyTips.filter(item => {
+                const matchCat = currentTipFilter === 'all' || item.cat === currentTipFilter;
+                const matchText = item.q.toLowerCase().includes(query) || item.a.toLowerCase().includes(query);
+                return matchCat && matchText;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400 text-sm">No se encontraron tips con esa búsqueda.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(item => `
+                <div class="bg-slate-800/90 border border-slate-700 hover:border-sky-500/50 rounded-2xl p-5 flex flex-col justify-between space-y-3 transition shadow-lg">
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-sky-500/15 text-sky-400">Pregunta #${item.id}</span>
+                            <span class="text-[10px] uppercase font-bold text-slate-400">${item.cat}</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-white leading-snug">${item.q}</h3>
+                    </div>
+                    <div class="text-xs text-slate-300 border-t border-slate-700/70 pt-3 leading-relaxed">
+                        ${item.a}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* MITO VS GUIA (TRUE/FALSE - 15 PREGUNTAS CON TEMPORIZADOR DE 15s) */
+        const tfStatements = [
+            { text: "El Product Owner le indica a los desarrolladores cómo construir las tareas técnicas.", isTrue: false, explanation: "Falso (Mito). Los desarrolladores son autogestionados y deciden cómo realizar el trabajo." },
+            { text: "La Retrospectiva del Sprint debe realizarse al final de cada Sprint.", isTrue: true, explanation: "Verdadero. La Retrospectiva es obligatoria al finalizar cada Sprint." },
+            { text: "El Daily Scrum es una reunión de reporte de estado para el Scrum Master.", isTrue: false, explanation: "Falso (Mito). Es un evento exclusivo por y para los desarrolladores." },
+            { text: "Si varios equipos trabajan en el mismo producto, integran su trabajo en cada Sprint.", isTrue: true, explanation: "Verdadero. Todos los equipos deben integrar sus incrementos en cada Sprint." },
+            { text: "El timebox de la Planificación del Sprint es de máximo 8 horas para un Sprint de un mes.", isTrue: true, explanation: "Verdadero. Es el límite máximo de la Guía Scrum 2020." },
+            { text: "Un Sprint puede extenderse un par de días si los desarrolladores están muy cerca de terminar.", isTrue: false, explanation: "Falso (Mito). Un Sprint nunca se extiende bajo ninguna circunstancia." },
+            { text: "Solo el Product Owner tiene la autoridad para cancelar un Sprint.", isTrue: true, explanation: "Verdadero. Y solo ocurre si el Objetivo del Sprint (Sprint Goal) se vuelve obsoleto." },
+            { text: "Cada elemento del Sprint Backlog tiene un desarrollador asignado como único dueño.", isTrue: false, explanation: "Falso (Mito). No existe propiedad individual; todo el Sprint Backlog es responsabilidad colectiva." },
+            { text: "El tamaño recomendado para un Equipo Scrum es de 10 personas o menos.", isTrue: true, explanation: "Verdadero. Incluyendo al Scrum Master, Product Owner y Desarrolladores." },
+            { text: "Un Incremento debe liberarse obligatoriamente a producción al finalizar cada Sprint.", isTrue: false, explanation: "Falso (Mito). 'Done' significa listo para liberarse, pero la decisión de lanzamiento es del PO." },
+            { text: "El Daily Scrum dura siempre 15 minutos sin importar la duración del Sprint.", isTrue: true, explanation: "Verdadero. Tiene un timebox fijo de 15 minutos." },
+            { text: "Scrum es una metodología prescriptiva con procesos detallados paso a paso.", isTrue: false, explanation: "Falso (Mito). Scrum es un marco de trabajo (framework) ligero, no una metodología." },
+            { text: "Celebrar el Daily Scrum siempre a la misma hora y lugar reduce la complejidad.", isTrue: true, explanation: "Verdadero. La coherencia operativa reduce la complejidad." },
+            { text: "En la Guía Scrum 2020 es obligatorio incluir al menos una mejora de la Retrospectiva en el siguiente Sprint Backlog.", isTrue: false, explanation: "Falso (Mito). Esa regla se eliminó en la actualización de la Guía 2020." },
+            { text: "Si varios equipos trabajan en un mismo producto, deben compartir una única Definición de Hecho (DoD).", isTrue: true, explanation: "Verdadero. Todos los equipos deben definir y cumplir una DoD común." }
+        ];
+
+        let tfIndex = 0;
+        let tfSessionPoints = 0;
+        let tfTimeLeft = 15;
+        let tfTimerInterval = null;
+
+        function clearTFTimer() {
+            if (tfTimerInterval) {
+                clearInterval(tfTimerInterval);
+                tfTimerInterval = null;
+            }
+        }
+
+        function startTFTimer() {
+            clearTFTimer();
+            tfTimeLeft = 15;
+            updateTFTimerUI();
+
+            tfTimerInterval = setInterval(() => {
+                tfTimeLeft--;
+                updateTFTimerUI();
+
+                if (tfTimeLeft <= 0) {
+                    clearTFTimer();
+                    handleTFTimeout();
+                }
+            }, 1000);
+        }
+
+        function updateTFTimerUI() {
+            const timerText = document.getElementById('tf-timer-text');
+            const timerBadge = document.getElementById('tf-timer-badge');
+            const timerBar = document.getElementById('tf-timer-bar');
+            if (!timerText || !timerBar) return;
+
+            timerText.innerText = `${tfTimeLeft}s`;
+            timerBar.style.width = `${(tfTimeLeft / 15) * 100}%`;
+
+            if (tfTimeLeft <= 5) {
+                timerBadge.className = "text-sm font-black px-3 py-1.5 rounded-lg bg-rose-950/90 border border-rose-500 text-rose-400 flex items-center gap-1.5 animate-pulse";
+                timerBar.className = "bg-rose-500 h-full transition-all duration-1000 ease-linear";
+            } else {
+                timerBadge.className = "text-sm font-black px-3 py-1.5 rounded-lg bg-amber-950/80 border border-amber-500/50 text-amber-400 flex items-center gap-1.5";
+                timerBar.className = "bg-amber-400 h-full transition-all duration-1000 ease-linear";
+            }
+        }
+
+        function handleTFTimeout() {
+            const current = tfStatements[tfIndex];
+            const fb = document.getElementById('tf-feedback');
+            fb.classList.remove('hidden');
+            document.getElementById('tf-buttons').classList.add('hidden');
+
+            fb.className = "p-4 rounded-xl text-sm font-medium border bg-amber-950/80 border-amber-500 text-amber-200 text-left";
+            fb.innerHTML = `<strong><i class="fa-solid fa-clock me-1"></i> ¡Tiempo agotado!</strong> ${current.explanation}`;
+
+            const nextBtn = document.getElementById('tf-next-btn');
+            nextBtn.innerHTML = tfIndex === tfStatements.length - 1
+                ? `<i class="fa-solid fa-rotate-right me-1"></i> Reiniciar Reto (15 Preguntas)`
+                : `Siguiente Afirmación <i class="fa-solid fa-arrow-right ms-1"></i>`;
+            nextBtn.classList.remove('hidden');
+        }
+
+        function initTFGame() {
+            tfIndex = 0;
+            tfSessionPoints = 0;
+            document.getElementById('tf-game-points').innerText = `Puntos: 0`;
+            renderTF();
+        }
+
+        function renderTF() {
+            const current = tfStatements[tfIndex];
+            document.getElementById('tf-progress-badge').innerText = `${tfIndex + 1} / ${tfStatements.length}`;
+            document.getElementById('tf-badge').innerText = `Afirmación de Examen #${tfIndex + 1}`;
+            document.getElementById('tf-statement').innerText = `"${current.text}"`;
+            document.getElementById('tf-feedback').classList.add('hidden');
+            document.getElementById('tf-buttons').classList.remove('hidden');
+            document.getElementById('tf-next-btn').classList.add('hidden');
+            startTFTimer();
+        }
+
+        function answerTF(userChoice) {
+            clearTFTimer();
+            const current = tfStatements[tfIndex];
+            const isCorrect = userChoice === current.isTrue;
+            const fb = document.getElementById('tf-feedback');
+
+            fb.classList.remove('hidden');
+            document.getElementById('tf-buttons').classList.add('hidden');
+
+            if (isCorrect) {
+                tfSessionPoints += 10;
+                addScoreToActiveStudent(10);
+                document.getElementById('tf-game-points').innerText = `Puntos: ${tfSessionPoints}`;
+                fb.className = "p-4 rounded-xl text-sm font-medium border bg-emerald-950/80 border-emerald-500 text-emerald-200 text-left";
+                fb.innerHTML = `<strong><i class="fa-solid fa-check me-1"></i> ¡Correcto! (+10 pts)</strong> ${current.explanation}`;
+            } else {
+                fb.className = "p-4 rounded-xl text-sm font-medium border bg-rose-950/80 border-rose-500 text-rose-200 text-left";
+                fb.innerHTML = `<strong><i class="fa-solid fa-xmark me-1"></i> Incorrecto.</strong> ${current.explanation}`;
+            }
+
+            const nextBtn = document.getElementById('tf-next-btn');
+            if (tfIndex === tfStatements.length - 1) {
+                nextBtn.innerHTML = `<i class="fa-solid fa-trophy me-1"></i> Finalizar y Reiniciar Reto`;
+                confetti({ particleCount: 70, spread: 60 });
+            } else {
+                nextBtn.innerHTML = `Siguiente Afirmación <i class="fa-solid fa-arrow-right ms-1"></i>`;
+            }
+            nextBtn.classList.remove('hidden');
+        }
+
+        function nextTF() {
+            if (tfIndex >= tfStatements.length - 1) {
+                initTFGame();
+            } else {
+                tfIndex++;
+                renderTF();
+            }
+        }
+
+        function addScoreToActiveStudent(points) {
+            if (!activeStudent) {
+                openRegistrationModal();
+                return;
+            }
+            activeStudent.score += points;
+            activeStudent.lastUpdated = Date.now();
+
+            const idx = students.findIndex(s => String(s.id) === String(activeStudent.id));
+            if (idx !== -1) {
+                students[idx] = { ...activeStudent };
+            }
+            updateRosterUI();
+            if (window.pushStudentToCloud) {
+                window.pushStudentToCloud(activeStudent);
+            }
+        }
+
+        function selectActiveStudent(id) {
+            const found = students.find(s => String(s.id) === String(id));
+            if (found) {
+                activeStudent = found;
+                myStudentId = found.id;
+                updateRosterUI();
+            }
+        }
+
+        /* Registration & Modal Handlers */
+        function openRegistrationModal() { document.getElementById('modal-registration').classList.remove('hidden'); }
+        function closeRegistrationModal() { document.getElementById('modal-registration').classList.add('hidden'); }
+
+        function selectAvatar(emoji) {
+            selectedAvatar = emoji;
+            document.querySelectorAll('.avatar-btn').forEach(btn => {
+                btn.className = "avatar-btn p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xl";
+            });
+            event.target.className = "avatar-btn active p-2.5 rounded-xl bg-slate-700 border-2 border-sky-500 text-xl";
+        }
+
+        function registerStudent(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('input-student-name').value.trim();
+            if (!nameInput) return;
+
+            const now = Date.now();
+            const newStudent = {
+                id: `${now}-${Math.floor(Math.random() * 1000)}`,
+                name: nameInput,
+                avatar: selectedAvatar,
+                score: 0,
+                joinedAt: now,
+                lastUpdated: now
+            };
+
+            myStudentId = newStudent.id;
+            activeStudent = newStudent;
+            students.push(newStudent);
+            updateRosterUI();
+
+            if (window.pushStudentToCloud) {
+                window.pushStudentToCloud(newStudent);
+            }
+
+            closeRegistrationModal();
+            document.getElementById('input-student-name').value = '';
+            showToast(`¡Bienvenido ${nameInput}! Ya estás compitiendo en vivo.`);
+        }
+
+        async function resetLiveRoom() {
+            const ids = students.map(s => s.id);
+            students = [];
+            activeStudent = null;
+            myStudentId = null;
+            updateRosterUI();
+            renderPodium();
+            if (window.clearRoomInCloud) {
+                await window.clearRoomInCloud(ids);
+            }
+            showToast("Sala reiniciada para una nueva ronda.");
+        }
+
+        /* Leaderboard & Podium Logic */
+        function openLeaderboardModal() {
+            renderPodium();
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+        }
+        function closeLeaderboardModal() { document.getElementById('modal-leaderboard').classList.add('hidden'); }
+
+        function renderPodium() {
+            const sorted = sortCompetitors(students);
+            const podiumEl = document.getElementById('visual-podium');
+            const listEl = document.getElementById('leaderboard-list');
+
+            podiumEl.innerHTML = '';
+            listEl.innerHTML = '';
+
+            const top4 = sorted.slice(0, 4);
+            const podiumOrder = [];
+            if (top4[1]) podiumOrder.push({ ...top4[1], rank: 2, css: 'podium-2', medal: '🥈' });
+            if (top4[0]) podiumOrder.push({ ...top4[0], rank: 1, css: 'podium-1', medal: '🥇' });
+            if (top4[2]) podiumOrder.push({ ...top4[2], rank: 3, css: 'podium-3', medal: '🥉' });
+            if (top4[3]) podiumOrder.push({ ...top4[3], rank: 4, css: 'podium-4', medal: '4º' });
+
+            podiumOrder.forEach(item => {
+                const timeStr = item.lastUpdated ? new Date(item.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+                const col = document.createElement('div');
+                col.className = "flex flex-col items-center justify-end flex-1 max-w-[110px]";
+                col.innerHTML = `
+                    <div class="text-center mb-1">
+                        <span class="text-2xl">${item.avatar}</span>
+                        <p class="text-xs font-bold text-white truncate max-w-[90px]">${item.name}</p>
+                        <span class="block text-[11px] font-extrabold text-sky-400">${item.score} pts</span>
+                        <span class="block text-[9px] text-slate-400">${timeStr}</span>
+                    </div>
+                    <div class="${item.css} w-full rounded-t-xl border border-slate-600/50 flex flex-col items-center justify-center p-2 shadow-lg">
+                        <span class="text-xl">${item.medal}</span>
+                    </div>
+                `;
+                podiumEl.appendChild(col);
+            });
+
+            sorted.forEach((s, idx) => {
+                const timeStr = s.lastUpdated ? new Date(s.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-3 rounded-xl border text-xs font-medium ${idx < 4 ? 'bg-slate-800 border-sky-500/40' : 'bg-slate-900 border-slate-800'}`;
+                row.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <span class="w-5 text-center font-bold text-slate-400">#${idx + 1}</span>
+                        <span class="text-lg">${s.avatar}</span>
+                        <div>
+                            <span class="font-bold text-white block">${s.name}</span>
+                            <span class="text-[10px] text-slate-400">Último punto: ${timeStr}</span>
+                        </div>
+                    </div>
+                    <span class="font-extrabold text-emerald-400">${s.score} pts</span>
+                `;
+                listEl.appendChild(row);
+            });
+
+            if (sorted.length > 0 && sorted[0].score > 0) {
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.5 } });
+            }
+        }
+
+        /* QR Modal Logic */
+        let qrcodeObj = null;
+        function openQRModal() {
+            document.getElementById('modal-qr').classList.remove('hidden');
+            const urlInput = document.getElementById('qr-url-input');
+            if (!urlInput.value) {
+                urlInput.value = window.location.href;
+            }
+            updateQRCode();
+        }
+        function closeQRModal() { document.getElementById('modal-qr').classList.add('hidden'); }
+
+        function copyRoomLink() {
+            const urlInput = document.getElementById('qr-url-input');
+            urlInput.select();
+            document.execCommand('copy');
+            showToast("Enlace de sala copiado al portapapeles");
+        }
+
+        function updateQRCode() {
+            const container = document.getElementById('qrcode-container');
+            container.innerHTML = '';
+            const val = document.getElementById('qr-url-input').value.trim();
+            if (val) {
+                qrcodeObj = new QRCode(container, {
+                    text: val,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#0f172a",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+        }
+
+        /* ================= 2. QUIZ SIMULATOR DATA & LOGIC ================= */
+        const quizData = [
+            {
+                id: 1, multi: true, selectCount: 2,
+                question: "Tras varios sprints, un interesado clave le comunica al PO que no está satisfecho con la calidad del producto, y el PO coincide. ¿Cómo debería responder el Scrum Master al Product Owner?",
+                options: [
+                    { id: "A", text: "Comunica al Product Owner que han tomado nota de la inquietud y que plantearán este problema en la retrospectiva del Sprint." },
+                    { id: "B", text: "Anime al propietario del producto a incluir especificaciones de calidad en el Product Backlog y a comunicar las inquietudes a los desarrolladores." },
+                    { id: "C", text: "Explíquele al Product Owner que corresponde a los desarrolladores decidir sobre los estándares de calidad aceptables." },
+                    { id: "D", text: "Transmita esta inquietud a los evaluadores para mejorar el proceso de verificación." },
+                    { id: "E", text: "Colabora con el Product Owner para comprender la solución que desea y ayúdale a formular un enfoque para plantear la inquietud a los desarrolladores." }
+                ],
+                correct: ["B", "E"],
+                explanation: "El SM debe orientar al PO para canalizar los requisitos de calidad a través del Product Backlog y colaborar directamente con los Desarrolladores."
+            },
+            {
+                id: 2, multi: false,
+                question: "El Scrum Master observa que el Product Owner tiene dificultades para ordenar el Product Backlog. ¿Qué acción debería tomar el Scrum Master?",
+                options: [
+                    { id: "A", text: "Anime al Product Owner a trabajar con los desarrolladores para determinar qué elementos son técnicamente más rápidos." },
+                    { id: "B", text: "Sugiera al Product Owner que extienda el Sprint para tener más tiempo para ordenar la lista." },
+                    { id: "C", text: "Ofrecer ayuda al Product Owner para que comprenda que el objetivo de ordenar el Product Backlog es maximizar el valor." },
+                    { id: "D", text: "Entregue al Product Owner una lista de tareas pendientes del producto ordenada para que la utilice." }
+                ],
+                correct: ["C"],
+                explanation: "El Scrum Master capacita al PO en la gestión del Product Backlog, enfatizando que el criterio rector es la maximización del valor."
+            },
+            {
+                id: 3, multi: false,
+                question: "Cuando varios equipos Scrum trabajan en el mismo producto, ¿deberían integrarse todos sus incrementos en cada sprint?",
+                options: [
+                    { id: "A", text: "Sí, para inspeccionar con precisión lo que se hace." },
+                    { id: "B", text: "No, eso es demasiado difícil y debe hacerse en un Sprint de hardening." },
+                    { id: "C", text: "Sí, pero solo para equipos cuyo trabajo tenga dependencias explícitas." },
+                    { id: "D", text: "No, cada equipo Scrum es independiente." }
+                ],
+                correct: ["A"],
+                explanation: "Para garantizar la transparencia y la inspección empírica, todos los incrementos trabajados en el mismo producto deben estar integrados al final de cada Sprint."
+            },
+            {
+                id: 4, multi: false,
+                question: "¿Qué enfoque es el mejor para los equipos Scrum a la hora de producir incrementos valiosos?",
+                options: [
+                    { id: "A", text: "Cada miembro trabaja únicamente como una capa independiente del sistema." },
+                    { id: "B", text: "Cada desarrollador trabaja en el componente en el que siente que puede aportar algo." },
+                    { id: "C", text: "Cada equipo Scrum es responsable de desarrollar la funcionalidad de principio a fin." },
+                    { id: "D", text: "Cada equipo Scrum trabaja en un conjunto independiente de componentes." }
+                ],
+                correct: ["C"],
+                explanation: "Los equipos Scrum son multifuncionales y responsables end-to-end de entregar valor útil en cada Incremento."
+            },
+            {
+                id: 5, multi: false,
+                question: "Se debe realizar una retrospectiva del sprint:",
+                options: [
+                    { id: "A", text: "Al comienzo de cada Sprint." },
+                    { id: "B", text: "Al final del último Sprint de un proyecto o versión." },
+                    { id: "C", text: "Solo cuando el Equipo Scrum determine que es necesario." },
+                    { id: "D", text: "Al final de cada Sprint." }
+                ],
+                correct: ["D"],
+                explanation: "La Retrospectiva concluye el Sprint y se celebra obligatoriamente al final de cada Sprint."
+            },
+            {
+                id: 6, multi: false,
+                question: "¿Por qué la reunión diaria de Scrum (Daily Scrum) se celebra siempre a la misma hora y en el mismo lugar?",
+                options: [
+                    { id: "A", text: "El Product Owner lo exige." },
+                    { id: "B", text: "El lugar puede ser nombrado por la gerencia." },
+                    { id: "C", text: "Las salas son difíciles de reservar." },
+                    { id: "D", text: "La coherencia reduce la complejidad." }
+                ],
+                correct: ["D"],
+                explanation: "La Guía Scrum señala explícitamente que realizar los eventos en la misma hora y lugar reduce la complejidad operativa."
+            },
+            {
+                id: 7, multi: false,
+                question: "¿Qué factor se debe tener en cuenta al establecer la duración del sprint?",
+                options: [
+                    { id: "A", text: "La frecuencia con la que se puede cambiar la formación del equipo." },
+                    { id: "B", text: "La necesidad de que el equipo aprenda a partir de la práctica y la medición de resultados." },
+                    { id: "C", text: "El calendario de lanzamientos de la organización." },
+                    { id: "D", text: "La obligación de realizar sprints de duración idéntica en toda la empresa." }
+                ],
+                correct: ["B"],
+                explanation: "Los Sprints limitan el riesgo y facilitan ciclos empíricos de aprendizaje mediante la práctica e inspección constante."
+            },
+            {
+                id: 8, multi: true, selectCount: 3,
+                question: "¿Cuáles son los temas apropiados para debatir en una retrospectiva de sprint?",
+                options: [
+                    { id: "A", text: "Definición de Hecho (Definition of Done)." },
+                    { id: "B", text: "Organizando el backlog del sprint para el próximo sprint." },
+                    { id: "C", text: "Cómo trabaja el equipo Scrum." },
+                    { id: "D", text: "Relaciones de equipo." },
+                    { id: "E", text: "El valor del trabajo representado actualmente en el Product Backlog." }
+                ],
+                correct: ["A", "C", "D"],
+                explanation: "La Retrospectiva del Sprint inspecciona el estado de las personas, las relaciones, los procesos, las herramientas y la Definición de Hecho."
+            },
+            {
+                id: 9, multi: false,
+                question: "¿Quiénes deben asistir a la reunión diaria de Scrum (Daily Scrum)?",
+                options: [
+                    { id: "A", text: "Los desarrolladores y el propietario del producto." },
+                    { id: "B", text: "El Scrum Master y el Product Owner." },
+                    { id: "C", text: "Los desarrolladores y el Scrum Master." },
+                    { id: "D", text: "El equipo Scrum completo." },
+                    { id: "E", text: "Los desarrolladores." }
+                ],
+                correct: ["E"],
+                explanation: "El Daily Scrum es un evento exclusivo por y para los Desarrolladores."
+            },
+            {
+                id: 10, multi: true, selectCount: 2,
+                question: "Elige dos responsabilidades de los desarrolladores autogestionados:",
+                options: [
+                    { id: "A", text: "Extraer los elementos del Product Backlog para el Sprint." },
+                    { id: "B", text: "Informar diariamente a los interesados externos." },
+                    { id: "C", text: "Realiza el trabajo planificado en el Sprint Backlog." },
+                    { id: "D", text: "Reordena la lista de tareas pendientes del producto." },
+                    { id: "E", text: "Aumentar la velocidad en cada Sprint obligatoriamente." }
+                ],
+                correct: ["A", "C"],
+                explanation: "Los Desarrolladores seleccionan los elementos del Product Backlog y realizan el trabajo necesario para transformarlos en un Incremento."
+            },
+            {
+                id: 11, multi: false,
+                question: "¿Cuándo se considera que un elemento del Product Backlog está completo?",
+                options: [
+                    { id: "A", text: "Al final del Sprint." },
+                    { id: "B", text: "Cuando obtiene la aprobación del patrocinador." },
+                    { id: "C", text: "Cuando cumple con todos los criterios de aceptación únicamente." },
+                    { id: "D", text: "Cuando el elemento cumple con la Definición de Hecho (Definition of Done)." }
+                ],
+                correct: ["D"],
+                explanation: "La Definición de Hecho determina si un elemento cumple con el estándar de calidad necesario para formar parte del Incremento."
+            },
+            {
+                id: 12, multi: false,
+                question: "¿Quién se encarga de garantizar que los elementos del Product Backlog cumplan con la Definición de Hecho?",
+                options: [
+                    { id: "A", text: "El Scrum Master." },
+                    { id: "B", text: "El propietario del producto (Product Owner)." },
+                    { id: "C", text: "El equipo Scrum completo." },
+                    { id: "D", text: "El equipo de control de calidad (QA)." },
+                    { id: "E", text: "Los desarrolladores." }
+                ],
+                correct: ["E"],
+                explanation: "Los Desarrolladores son los únicos responsables de adherirse a la Definición de Hecho y garantizar su calidad."
+            },
+            {
+                id: 13, multi: false,
+                question: "¿Cuál es el límite de tiempo (timebox) para el evento de Planificación del Sprint (Sprint Planning)?",
+                options: [
+                    { id: "A", text: "Mensual." },
+                    { id: "B", text: "4 horas para un Sprint de un mes." },
+                    { id: "C", text: "Cuando se concluya la estimación." },
+                    { id: "D", text: "8 horas para un Sprint de un mes." }
+                ],
+                correct: ["D"],
+                explanation: "El timebox oficial máximo para la Planificación del Sprint es de 8 horas para un Sprint de un mes."
+            },
+            {
+                id: 14, multi: false,
+                question: "¿Quién es responsable de expresar claramente los elementos del Product Backlog?",
+                options: [
+                    { id: "A", text: "El Scrum Master." },
+                    { id: "B", text: "El propietario del producto (Product Owner)." },
+                    { id: "C", text: "El Scrum Master o bien este puede hacer que los desarrolladores lo hagan." },
+                    { id: "D", text: "El analista de negocios." }
+                ],
+                correct: ["B"],
+                explanation: "Expresar claramente los elementos del Product Backlog es una responsabilidad explícita del Product Owner."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let userAnswers = {};
+        let quizSessionScore = 0;
+
+        function renderQuestion() {
+            const q = quizData[currentQuizIndex];
+            const total = quizData.length;
+
+            document.getElementById('quiz-progress-text').innerText = `${currentQuizIndex + 1} / ${total}`;
+            document.getElementById('quiz-score-text').innerText = `${quizSessionScore} pts`;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuizIndex + 1) / total) * 100}%`;
+
+            const badge = document.getElementById('question-type-badge');
+            if (q.multi) {
+                badge.innerText = `Selecciona las ${q.selectCount} mejores respuestas`;
+                badge.className = "inline-block text-xs font-bold px-3 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 mb-2";
+            } else {
+                badge.innerText = "Elija la mejor respuesta";
+                badge.className = "inline-block text-xs font-bold px-3 py-1 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2";
+            }
+
+            document.getElementById('question-text').innerText = `${q.id}. ${q.question}`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+
+            const selected = userAnswers[q.id] || [];
+
+            q.options.forEach(opt => {
+                const isSelected = selected.includes(opt.id);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => toggleOption(q.id, opt.id, q.multi, q.selectCount);
+
+                let baseClasses = "w-full text-left p-4 rounded-xl border text-sm font-medium transition flex items-start space-x-3 ";
+                if (isSelected) {
+                    baseClasses += "bg-sky-950/80 border-sky-500 text-white shadow-md ring-1 ring-sky-500";
+                } else {
+                    baseClasses += "bg-slate-900/50 border-slate-700 text-slate-300 hover:bg-slate-700/50 hover:border-slate-600";
+                }
+
+                btn.className = baseClasses;
+                btn.innerHTML = `
+                    <span class="w-6 h-6 rounded-md flex items-center justify-center font-bold text-xs shrink-0 ${isSelected ? 'bg-sky-500 text-white' : 'bg-slate-800 text-slate-400 border border-slate-600'}">
+                        ${opt.id}
+                    </span>
+                    <span class="leading-relaxed">${opt.text}</span>
+                `;
+                container.appendChild(btn);
+            });
+
+            const feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.className = "hidden p-4 rounded-xl border text-sm font-medium transition-all duration-300";
+            feedbackEl.innerHTML = '';
+
+            document.getElementById('btn-prev').disabled = currentQuizIndex === 0;
+
+            if (userAnswers[q.id + '_submitted']) {
+                showSubmittedFeedback(q);
+            } else {
+                document.getElementById('btn-submit').classList.remove('hidden');
+                document.getElementById('btn-next').classList.add('hidden');
+            }
+        }
+
+        function toggleOption(qId, optId, isMulti, maxSelect) {
+            if (userAnswers[qId + '_submitted']) return;
+            if (!userAnswers[qId]) userAnswers[qId] = [];
+
+            if (isMulti) {
+                const idx = userAnswers[qId].indexOf(optId);
+                if (idx > -1) {
+                    userAnswers[qId].splice(idx, 1);
+                } else {
+                    if (userAnswers[qId].length < maxSelect) {
+                        userAnswers[qId].push(optId);
+                    }
+                }
+            } else {
+                userAnswers[qId] = [optId];
+            }
+            renderQuestion();
+        }
+
+        function submitAnswer() {
+            const q = quizData[currentQuizIndex];
+            const selected = userAnswers[q.id] || [];
+
+            if (selected.length === 0) {
+                showToast("Por favor selecciona una respuesta antes de continuar.");
+                return;
+            }
+
+            userAnswers[q.id + '_submitted'] = true;
+            const isCorrect = q.correct.length === selected.length && q.correct.every(val => selected.includes(val));
+
+            if (isCorrect) {
+                quizSessionScore += 10;
+                addScoreToActiveStudent(10);
+            }
+
+            showSubmittedFeedback(q);
+        }
+
+        function showSubmittedFeedback(q) {
+            const selected = userAnswers[q.id] || [];
+            const isCorrect = q.correct.length === selected.length && q.correct.every(val => selected.includes(val));
+
+            const feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.classList.remove('hidden');
+
+            if (isCorrect) {
+                feedbackEl.className = "p-4 rounded-xl border text-sm font-medium bg-emerald-950/60 border-emerald-500/50 text-emerald-300 space-y-1";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center space-x-2 font-bold text-base">
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                        <span>¡Respuesta Correcta! (+10 pts añadidos a tu perfil)</span>
+                    </div>
+                    <p class="text-xs text-emerald-200/90">${q.explanation}</p>
+                `;
+            } else {
+                feedbackEl.className = "p-4 rounded-xl border text-sm font-medium bg-rose-950/60 border-rose-500/50 text-rose-300 space-y-1";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center space-x-2 font-bold text-base">
+                        <i class="fa-solid fa-circle-xmark text-rose-400"></i>
+                        <span>Respuesta Incorrecta</span>
+                    </div>
+                    <p class="text-xs text-rose-200/90">Respuesta oficial: <strong>${q.correct.join(', ')}</strong></p>
+                    <p class="text-xs text-slate-300 mt-1">${q.explanation}</p>
+                `;
+            }
+
+            document.getElementById('btn-submit').classList.add('hidden');
+            document.getElementById('btn-next').classList.remove('hidden');
+        }
+
+        function navigateQuiz(dir) {
+            currentQuizIndex += dir;
+            if (currentQuizIndex < 0) currentQuizIndex = 0;
+            if (currentQuizIndex >= quizData.length) currentQuizIndex = quizData.length - 1;
+            renderQuestion();
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            userAnswers = {};
+            quizSessionScore = 0;
+            renderQuestion();
+        }
+
+        /* ================= 4. GAMES LOGIC ================= */
+        function switchGame(gameId) {
+            document.querySelectorAll('.game-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`game-${gameId}`).classList.remove('hidden');
+
+            document.querySelectorAll('#content-games button[id^="game-btn-"]').forEach(btn => {
+                btn.className = "px-4 py-2 rounded-xl text-sm font-bold bg-slate-800 text-slate-400 hover:text-white transition";
+            });
+            document.getElementById(`game-btn-${gameId}`).className = "px-4 py-2 rounded-xl text-sm font-bold bg-sky-600 text-white transition";
+
+            if (gameId === 'wordsearch') initWordSearch();
+            if (gameId === 'crossword') initCrossword();
+            if (gameId === 'match') initMatchGame();
+            if (gameId === 'tf') initTFGame();
+        }
+
+        /* SOPA DE LETRAS BASADA EN PREGUNTAS */
+        const wsQuestionsData = [
+            { word: "COHERENCIA", question: "¿Qué reduce la complejidad al celebrar siempre el Daily Scrum a la misma hora y lugar?" },
+            { word: "INCREMENTO", question: "¿Qué artefacto valioso y utilizable debe producir cada Sprint?" },
+            { word: "VALOR", question: "¿Cuál es el criterio rector del Product Owner al ordenar el Product Backlog?" },
+            { word: "TIMEBOX", question: "¿Cómo se denomina la duración máxima permitida para un evento en Scrum?" },
+            { word: "FRAMEWORK", question: "¿Qué describe mejor a Scrum (nunca una metodología o proceso rígido)?" },
+            { word: "EMPIRISMO", question: "¿En qué teoría se basa Scrum (transparencia, inspección y adaptación)?" }
+        ];
+        let wsFoundWords = [];
+        let wsFirstClick = null;
+
+        function initWordSearch() {
+            wsFoundWords = [];
+            wsFirstClick = null;
+            document.getElementById('ws-found-count').innerText = `Resueltas: 0 / ${wsQuestionsData.length}`;
+            
+            const grid = Array(12).fill(null).map(() => Array(12).fill(''));
+            
+            wsQuestionsData.forEach(item => {
+                const word = item.word;
+                let placed = false;
+                let attempts = 0;
+                while (!placed && attempts < 200) {
+                    attempts++;
+                    const dir = Math.random() > 0.5 ? 'H' : 'V';
+                    const maxR = dir === 'V' ? (12 - word.length) : 11;
+                    const maxC = dir === 'H' ? (12 - word.length) : 11;
+                    
+                    const row = Math.floor(Math.random() * (maxR + 1));
+                    const col = Math.floor(Math.random() * (maxC + 1));
+
+                    let canPlace = true;
+                    for (let i = 0; i < word.length; i++) {
+                        const r = dir === 'V' ? row + i : row;
+                        const c = dir === 'H' ? col + i : col;
+                        if (r < 12 && c < 12 && grid[r]) {
+                            if (grid[r][c] !== '' && grid[r][c] !== word[i]) {
+                                canPlace = false;
+                                break;
+                            }
+                        } else {
+                            canPlace = false;
+                            break;
+                        }
+                    }
+
+                    if (canPlace) {
+                        for (let i = 0; i < word.length; i++) {
+                            const r = dir === 'V' ? row + i : row;
+                            const c = dir === 'H' ? col + i : col;
+                            grid[r][c] = word[i];
+                        }
+                        placed = true;
+                    }
+                }
+            });
+
+            const letters = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+            for (let r = 0; r < 12; r++) {
+                for (let c = 0; c < 12; c++) {
+                    if (grid[r][c] === '') {
+                        grid[r][c] = letters[Math.floor(Math.random() * letters.length)];
+                    }
+                }
+            }
+
+            const gridContainer = document.getElementById('ws-grid');
+            gridContainer.innerHTML = '';
+            for (let r = 0; r < 12; r++) {
+                for (let c = 0; c < 12; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = "w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center bg-slate-900 border border-slate-700/60 rounded-md cursor-pointer hover:bg-sky-900/40 transition text-slate-200 select-none";
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    cell.dataset.char = grid[r][c];
+                    cell.innerText = grid[r][c];
+                    cell.onclick = () => handleCellClick(cell, r, c);
+                    gridContainer.appendChild(cell);
+                }
+            }
+
+            const wordsListEl = document.getElementById('ws-words-list');
+            wordsListEl.innerHTML = '';
+            wsQuestionsData.forEach((item, idx) => {
+                const li = document.createElement('li');
+                li.id = `ws-word-${item.word}`;
+                li.className = "text-xs text-slate-300 bg-slate-900/70 p-3 rounded-xl border border-slate-700 space-y-1 transition";
+                li.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <span class="font-semibold leading-snug"><strong class="text-sky-400">${idx + 1}.</strong> ${item.question}</span>
+                        <i class="fa-solid fa-circle-question text-slate-500 shrink-0 mt-0.5"></i>
+                    </div>
+                    <div class="ws-revealed-answer hidden text-[11px] font-extrabold text-emerald-400 uppercase tracking-wider pt-1">
+                        ✓ Respuesta: ${item.word}
+                    </div>
+                `;
+                wordsListEl.appendChild(li);
+            });
+        }
+
+        function handleCellClick(cell, r, c) {
+            if (!wsFirstClick) {
+                wsFirstClick = { r, c, cell };
+                cell.classList.add('grid-cell-selected');
+            } else {
+                const r1 = wsFirstClick.r;
+                const c1 = wsFirstClick.c;
+                wsFirstClick.cell.classList.remove('grid-cell-selected');
+
+                const selectedCells = getCellsBetween(r1, c1, r, c);
+                const formedStr = selectedCells.map(el => el.dataset.char).join('');
+                const revStr = formedStr.split('').reverse().join('');
+
+                const foundObj = wsQuestionsData.find(item => item.word === formedStr || item.word === revStr);
+
+                if (foundObj && !wsFoundWords.includes(foundObj.word)) {
+                    wsFoundWords.push(foundObj.word);
+                    selectedCells.forEach(el => el.classList.add('grid-cell-found'));
+
+                    addScoreToActiveStudent(15);
+
+                    const itemEl = document.getElementById(`ws-word-${foundObj.word}`);
+                    if (itemEl) {
+                        itemEl.className = "text-xs text-emerald-200 bg-emerald-950/60 p-3 rounded-xl border border-emerald-600/60 space-y-1 transition";
+                        itemEl.querySelector('i').className = "fa-solid fa-circle-check text-emerald-400 shrink-0 mt-0.5";
+                        itemEl.querySelector('.ws-revealed-answer').classList.remove('hidden');
+                    }
+
+                    document.getElementById('ws-found-count').innerText = `Resueltas: ${wsFoundWords.length} / ${wsQuestionsData.length}`;
+
+                    if (wsFoundWords.length === wsQuestionsData.length) {
+                        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                    }
+                }
+                wsFirstClick = null;
+            }
+        }
+
+        /* CRUCIGRAMA PSM I */
+        const cwRows = 12;
+        const cwCols = 14;
+        const cwWords = [
+            { num: 1, dir: 'across', row: 1, col: 1, word: 'RETROSPECTIVA', clue: 'Evento que se realiza obligatoriamente al final de cada Sprint para inspeccionar cómo trabaja el equipo.' },
+            { num: 2, dir: 'down', row: 1, col: 5, word: 'OCHO', clue: 'Límite máximo de horas para la Planificación del Sprint (Sprint Planning) en un Sprint de un mes.' },
+            { num: 3, dir: 'across', row: 4, col: 3, word: 'HECHO', clue: 'Definición de _____: estándar de calidad que debe cumplir un elemento para considerarse completo.' },
+            { num: 4, dir: 'down', row: 0, col: 10, word: 'DIEZ', clue: 'Número máximo de personas recomendado para todo un Equipo Scrum.' },
+            { num: 5, dir: 'across', row: 7, col: 1, word: 'QUINCE', clue: 'Duración exacta en minutos de la reunión diaria de Scrum (Daily Scrum).' },
+            { num: 6, dir: 'down', row: 4, col: 7, word: 'OBJETIVO', clue: 'Única razón válida por la cual el Product Owner puede cancelar un Sprint: cuando este se vuelve obsoleto.' },
+            { num: 7, dir: 'across', row: 10, col: 4, word: 'BACKLOG', clue: 'Product _____: lista ordenada cuya responsabilidad de expresar claramente sus elementos recae en el PO.' }
+        ];
+        let cwAwardedWords = new Set();
+
+        function initCrossword() {
+            cwAwardedWords.clear();
+            const gridEl = document.getElementById('cw-grid');
+            const acrossEl = document.getElementById('cw-clues-across');
+            const downEl = document.getElementById('cw-clues-down');
+            const statusEl = document.getElementById('cw-status');
+
+            gridEl.style.gridTemplateColumns = `repeat(${cwCols}, minmax(0, 1fr))`;
+            gridEl.innerHTML = '';
+            acrossEl.innerHTML = '';
+            downEl.innerHTML = '';
+            statusEl.innerText = 'Completa las palabras y presiona "Validar Crucigrama".';
+
+            const cellMap = {};
+            cwWords.forEach(w => {
+                for (let i = 0; i < w.word.length; i++) {
+                    const r = w.dir === 'down' ? w.row + i : w.row;
+                    const c = w.dir === 'across' ? w.col + i : w.col;
+                    const key = `${r}-${c}`;
+                    if (!cellMap[key]) cellMap[key] = { letter: w.word[i], nums: [] };
+                    if (i === 0) cellMap[key].nums.push(w.num);
+                }
+
+                const li = document.createElement('li');
+                li.id = `cw-clue-${w.num}`;
+                li.className = "p-2.5 rounded-xl bg-slate-900/70 border border-slate-700 leading-relaxed";
+                li.innerHTML = `<strong class="text-white">${w.num}.</strong> ${w.clue} <span class="text-[10px] text-slate-400">(${w.word.length} letras)</span>`;
+                if (w.dir === 'across') acrossEl.appendChild(li);
+                else downEl.appendChild(li);
+            });
+
+            for (let r = 0; r < cwRows; r++) {
+                for (let c = 0; c < cwCols; c++) {
+                    const key = `${r}-${c}`;
+                    const cellDiv = document.createElement('div');
+                    cellDiv.className = "w-7 h-7 sm:w-8 sm:h-8 relative rounded-md flex items-center justify-center";
+
+                    if (cellMap[key]) {
+                        cellDiv.className += " bg-slate-900 border border-slate-600";
+                        if (cellMap[key].nums.length > 0) {
+                            const numSpan = document.createElement('span');
+                            numSpan.className = "absolute top-0.5 left-1 text-[9px] font-black text-sky-400 pointer-events-none leading-none";
+                            numSpan.innerText = cellMap[key].nums.join('/');
+                            cellDiv.appendChild(numSpan);
+                        }
+                        const input = document.createElement('input');
+                        input.type = "text";
+                        input.maxLength = 1;
+                        input.dataset.r = r;
+                        input.dataset.c = c;
+                        input.dataset.answer = cellMap[key].letter;
+                        input.className = "cw-input text-xs sm:text-sm rounded-md";
+                        input.oninput = (e) => {
+                            e.target.value = e.target.value.toUpperCase().replace(/[^A-ZÑ]/g, '');
+                            e.target.parentElement.classList.remove('cw-wrong');
+                        };
+                        cellDiv.appendChild(input);
+                    } else {
+                        cellDiv.className += " bg-slate-950/40";
+                    }
+                    gridEl.appendChild(cellDiv);
+                }
+            }
+        }
+
+        function checkCrossword() {
+            let newlySolved = 0;
+            let totalSolved = 0;
+
+            cwWords.forEach(w => {
+                let wordCorrect = true;
+                const cells = [];
+
+                for (let i = 0; i < w.word.length; i++) {
+                    const r = w.dir === 'down' ? w.row + i : w.row;
+                    const c = w.dir === 'across' ? w.col + i : w.col;
+                    const input = document.querySelector(`.cw-input[data-r="${r}"][data-c="${c}"]`);
+                    if (input) {
+                        cells.push(input);
+                        if (input.value !== w.word[i]) {
+                            wordCorrect = false;
+                        }
+                    }
+                }
+
+                const clueEl = document.getElementById(`cw-clue-${w.num}`);
+                if (wordCorrect) {
+                    totalSolved++;
+                    cells.forEach(inp => {
+                        inp.parentElement.classList.remove('cw-wrong');
+                        inp.parentElement.classList.add('cw-correct');
+                        inp.readOnly = true;
+                    });
+                    if (clueEl) {
+                        clueEl.className = "p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/60 text-emerald-200 leading-relaxed";
+                    }
+                    if (!cwAwardedWords.has(w.num)) {
+                        cwAwardedWords.add(w.num);
+                        newlySolved++;
+                    }
+                } else {
+                    cells.forEach(inp => {
+                        if (!inp.readOnly && inp.value !== '') {
+                            inp.parentElement.classList.add('cw-wrong');
+                        }
+                    });
+                }
+            });
+
+            if (newlySolved > 0) {
+                addScoreToActiveStudent(newlySolved * 15);
+            }
+
+            const statusEl = document.getElementById('cw-status');
+            statusEl.innerHTML = `<span class="text-emerald-400">Palabras correctas: ${totalSolved} / ${cwWords.length}</span>`;
+
+            if (totalSolved === cwWords.length) {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                statusEl.innerHTML = `<span class="text-emerald-400 text-sm">🎉 ¡Crucigrama completado al 100%!</span>`;
+            }
+        }
+
+        function getCellsBetween(r1, c1, r2, c2) {
+            const cells = [];
+            const dr = Math.sign(r2 - r1);
+            const dc = Math.sign(c2 - c1);
+
+            if (r1 !== r2 && c1 !== c2) return [];
+
+            let currR = r1;
+            let currC = c1;
+
+            while (true) {
+                const selector = `[data-r="${currR}"][data-c="${currC}"]`;
+                const el = document.querySelector(selector);
+                if (el) cells.push(el);
+                if (currR === r2 && currC === c2) break;
+                currR += dr;
+                currC += dc;
+            }
+            return cells;
+        }
+
+        /* CONCEPT MATCHING GAME */
+        const matchPairs = [
+            { id: 1, role: "Product Owner", desc: "Maximizar el valor del producto y expresar claramente el Product Backlog." },
+            { id: 2, role: "Desarrolladores", desc: "Crear un Incremento utilizable que cumpla la Definición de Hecho." },
+            { id: 3, role: "Scrum Master", desc: "Promover y apoyar Scrum guiando en autogestión y empirismo." },
+            { id: 4, role: "Daily Scrum", desc: "Evento diario de 15 min para inspeccionar el progreso hacia el Sprint Goal." }
+        ];
+
+        let selectedMatchConcept = null;
+        let matchedCount = 0;
+
+        function initMatchGame() {
+            selectedMatchConcept = null;
+            matchedCount = 0;
+
+            const leftCol = document.getElementById('match-left');
+            const rightCol = document.getElementById('match-right');
+            leftCol.innerHTML = ''; rightCol.innerHTML = '';
+
+            const shuffledRight = [...matchPairs].sort(() => Math.random() - 0.5);
+
+            matchPairs.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = "match-left-item w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-left font-bold text-sky-400 hover:border-sky-500 transition";
+                btn.dataset.id = p.id;
+                btn.innerText = p.role;
+                btn.onclick = () => selectLeftMatch(btn, p.id);
+                leftCol.appendChild(btn);
+            });
+
+            shuffledRight.forEach(p => {
+                const btn = document.createElement('button');
+                btn.className = "match-right-item w-full p-4 rounded-xl bg-slate-900 border border-slate-700 text-left text-xs font-medium text-slate-300 hover:border-sky-500 transition";
+                btn.dataset.id = p.id;
+                btn.innerText = p.desc;
+                btn.onclick = () => selectRightMatch(btn, p.id);
+                rightCol.appendChild(btn);
+            });
+        }
+
+        function selectLeftMatch(btn, id) {
+            document.querySelectorAll('.match-left-item').forEach(el => el.classList.remove('ring-2', 'ring-sky-500', 'bg-sky-950'));
+            btn.classList.add('ring-2', 'ring-sky-500', 'bg-sky-950');
+            selectedMatchConcept = id;
+        }
+
+        function selectRightMatch(btn, id) {
+            if (!selectedMatchConcept) return;
+
+            if (selectedMatchConcept === id) {
+                btn.className = "w-full p-4 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-200 text-xs font-bold";
+                btn.disabled = true;
+
+                const leftBtn = document.querySelector(`.match-left-item[data-id="${id}"]`);
+                if (leftBtn) {
+                    leftBtn.className = "w-full p-4 rounded-xl bg-emerald-950 border border-emerald-500 text-emerald-300 font-bold";
+                    leftBtn.disabled = true;
+                }
+
+                matchedCount++;
+                addScoreToActiveStudent(10);
+                selectedMatchConcept = null;
+
+                if (matchedCount === matchPairs.length) {
+                    confetti({ particleCount: 80, spread: 60 });
+                }
+            } else {
+                btn.classList.add('bg-rose-950', 'border-rose-500');
+                setTimeout(() => { btn.classList.remove('bg-rose-950', 'border-rose-500'); }, 800);
+            }
+        }
+
+        /* TIPS FILTER */
+        function filterTips(category, btnEl) {
+            currentTipFilter = category;
+            document.querySelectorAll('.tip-filter-btn').forEach(btn => {
+                btn.className = "tip-filter-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600";
+            });
+            if (btnEl) {
+                btnEl.className = "tip-filter-btn active px-3 py-1.5 text-xs font-bold rounded-lg bg-sky-600 text-white";
+            }
+            renderTipsGrid();
+        }
+
+        /* MAIN TAB NAVIGATION */
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.className = "nav-tab px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800";
+            });
+
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "nav-tab px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 bg-sky-600 text-white shadow";
+            }
+
+            if (tabId === 'flashcards') updateFlashcardUI();
+            if (tabId === 'games') switchGame('wordsearch');
+            if (tabId === 'tips') renderTipsGrid();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        /* INITIAL LOAD */
+        window.onload = function() {
+            updateRosterUI();
+            renderQuestion();
+            renderTipsGrid();
+            updateFlashcardUI();
+            if (!activeStudent) {
+                openRegistrationModal();
+            }
+        };
+    </script>
+</body>
+</html>
